@@ -11,3 +11,82 @@ scripts/kconfig/.zconf.tab.o.cmd
 scripts/kconfig/conf.o
 scripts/kconfig/zconf.tab.o
 tags
+
+.config.old
+.tmp_vmlinux1
+.tmp_vmlinux2
+.version
+arch/arm/boot/dts/.vexpress-v2p-ca15-tc1.dtb.d.dtc.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca15-tc1.dtb.d.pre.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca15-tc1.dtb.dts.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca15_a7.dtb.d.dtc.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca15_a7.dtb.d.pre.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca15_a7.dtb.dts.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca5s.dtb.d.dtc.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca5s.dtb.d.pre.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca5s.dtb.dts.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca9.dtb.d.dtc.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca9.dtb.d.pre.tmp
+arch/arm/boot/dts/.vexpress-v2p-ca9.dtb.dts.tmp
+arch/arm/include/generated/
+arch/arm/kernel/asm-offsets.s
+include/config/
+include/generated/
+kernel/bounds.s
+scripts/mod/devicetable-offsets.s
+vmlinux
+
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
