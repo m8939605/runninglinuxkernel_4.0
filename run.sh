@@ -74,6 +74,36 @@ case $1 in
 				-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8 slub_debug kmemleak=on" \
 				--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
 				$DBG ;;
+	arm32_1)
+		if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+			echo "please create console device node first, and recompile kernel"
+			exit 1
+		fi
+		qemu-system-arm -M vexpress-a9 -smp 1 -m 100M -kernel arch/arm/boot/zImage \
+				-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
+				-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8 slub_debug kmemleak=on" \
+				--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
+				$DBG ;;
+	arm32_swap)
+		if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+			echo "please create console device node first, and recompile kernel"
+			exit 1
+		fi
+		qemu-system-arm -M vexpress-a9 -smp 1 -m 100M -kernel arch/arm/boot/zImage \
+				-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic -sd swap.img\
+				-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8 slub_debug kmemleak=on" \
+				--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
+				$DBG ;;
+	arm32_ext4)
+		if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+			echo "please create console device node first, and recompile kernel"
+			exit 1
+		fi
+		qemu-system-arm -M vexpress-a9 -smp 1 -m 100M -kernel arch/arm/boot/zImage \
+				-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic -sd ext4.img\
+				-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8 slub_debug kmemleak=on" \
+				--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
+				$DBG ;;
 	arm64)
 		if [ ! -c $LROOT/$ROOTFS_ARM64/$CONSOLE_DEV_NODE ]; then
 			echo "please create console device node first, and recompile kernel"
