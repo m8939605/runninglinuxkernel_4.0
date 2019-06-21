@@ -3,10 +3,13 @@
 #include <linux/uaccess.h>
 #include <linux/init.h>
 #include <linux/cdev.h>
+#include <linux/device.h>
+
 
 #define DEMO_NAME "my_demo_dev"
 static dev_t dev;
 static struct cdev *demo_cdev;
+static struct class *demo_class;
 static signed count = 1;
 
 static int demodrv_open(struct inode *inode, struct file *file)
@@ -76,6 +79,17 @@ static int __init simple_char_init(void)
 	printk("Major number = %d, minor number = %d\n",
 			MAJOR(dev), MINOR(dev));
 
+	/*Create device class for udev*/
+	demo_class = class_create(THIS_MODULE, "demo_class");
+	if (IS_ERR(demo_class)) {
+		printk(KERN_ERR "Unable to class_create\n");
+		goto cdev_fail;
+	}
+
+	/*Create device node*/
+	device_create(demo_class, NULL, dev, NULL, "demo_drv");
+
+
 	return 0;
 
 cdev_fail:
@@ -89,6 +103,9 @@ unregister_chrdev:
 static void __exit simple_char_exit(void)
 {
 	printk("removing device\n");
+
+	device_destroy(demo_class, dev);
+	class_destroy(demo_class);
 
 	if (demo_cdev)
 		cdev_del(demo_cdev);
