@@ -50,7 +50,7 @@ demodrv_read(struct file *file, char __user *buf, size_t lbuf, loff_t *ppos)
 	actual_readed = need_read - ret;
 	*ppos += actual_readed;
 	
-	printk("%s, actual_readed=%d, pos=%d\n",__func__, actual_readed, *ppos);
+	printk("%s, actual_readed=%d, ppos=%lld\n",__func__, actual_readed, *ppos);
 	return actual_readed;
 }
 
@@ -76,7 +76,7 @@ demodrv_write(struct file *file, const char __user *buf, size_t count, loff_t *p
 
 	actual_write = need_write - ret;
 	*ppos += actual_write;
-	printk("%s: actual_write =%d, ppos=%d\n", __func__, actual_write, *ppos);
+	printk("%s: actual_write =%d, ppos=%lld\n", __func__, actual_write, *ppos);
 
 	return actual_write;
 }
