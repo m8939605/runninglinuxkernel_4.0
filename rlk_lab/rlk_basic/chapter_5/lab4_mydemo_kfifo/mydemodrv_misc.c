@@ -36,11 +36,16 @@ demodrv_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	int actual_readed;
 	int ret;
 
+	if (count > MAX_DEVICE_BUFFER_SIZE){
+		printk("%s: count > MAX_DEVICE_BUFFER_SIZE, count = %d\n", __func__, count);
+		return -EIO;
+	}
+
 	ret = kfifo_to_user(&mydemo_fifo, buf, count, &actual_readed);
 	if (ret)
 		return -EIO;
 	
-	printk("%s, actual_readed=%d, pos=%lld\n",__func__, actual_readed, *ppos);
+	printk("%s, actual_readed=%d, kfifo_len=%d\n",__func__, actual_readed, kfifo_len(&mydemo_fifo));
 	return actual_readed;
 }
 
@@ -50,11 +55,16 @@ demodrv_write(struct file *file, const char __user *buf, size_t count, loff_t *p
 	unsigned int actual_write;
 	int ret;
 
+	if (count > MAX_DEVICE_BUFFER_SIZE){
+		printk("%s: count > MAX_DEVICE_BUFFER_SIZE, count = %d\n", __func__, count);
+		return -EIO;
+	}
+
 	ret = kfifo_from_user(&mydemo_fifo, buf, count, &actual_write);
 	if (ret)
 		return -EIO;
 
-	printk("%s: actual_write =%d, ppos=%lld\n", __func__, actual_write, *ppos);
+	printk("%s: actual_write =%d, kfifo_len=%d\n", __func__, actual_write, kfifo_len(&mydemo_fifo));
 
 	return actual_write;
 }
