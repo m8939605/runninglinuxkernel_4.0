@@ -1,5 +1,5 @@
 
-BASEINCLUDE ?= /home/ben/work/runninglinuxkernel_4.0
+BASEINCLUDE ?= /home/buildsystem/work/code/proj_test/runninglinuxkernel_4.0
 #BASEINCLUDE ?= /lib/modules/`uname -r`/build
 
 mydemo_misc-objs := mydemodrv_misc.o 
