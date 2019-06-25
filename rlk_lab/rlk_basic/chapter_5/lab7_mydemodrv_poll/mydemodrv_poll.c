@@ -20,7 +20,7 @@ static struct cdev *demo_cdev;
 struct mydemo_device {
 	char name[64];
 	struct device *dev;
-        wait_queue_head_t read_queue;
+	wait_queue_head_t read_queue;
 	wait_queue_head_t write_queue;	
 	struct kfifo mydemo_fifo;
 };
@@ -133,13 +133,18 @@ static unsigned int demodrv_poll(struct file *file, poll_table *wait)
 	struct mydemo_private_data *data = file->private_data;
 	struct mydemo_device *device = data->device;
 
+	printk("In %s: device name=%s, \n", __func__, device->name);
 	poll_wait(file, &device->read_queue, wait);
-        poll_wait(file, &device->write_queue, wait);
+	poll_wait(file, &device->write_queue, wait);
 
-	if (!kfifo_is_empty(&device->mydemo_fifo))
+	if (!kfifo_is_empty(&device->mydemo_fifo)){
+		printk("%s: device name=%s, !kfifo_is_empty\n", __func__, device->name);
 		mask |= POLLIN | POLLRDNORM;
-	if (!kfifo_is_full(&device->mydemo_fifo))
+	}
+	if (!kfifo_is_full(&device->mydemo_fifo)){
+		printk("%s: device name=%s, !kfifo_is_full\n", __func__, device->name);
 		mask |= POLLOUT | POLLWRNORM;
+	}
 	
 	return mask;
 }
@@ -150,7 +155,7 @@ static const struct file_operations demodrv_fops = {
 	.release = demodrv_release,
 	.read = demodrv_read,
 	.write = demodrv_write,
-        .poll = demodrv_poll,
+	.poll = demodrv_poll,
 };
 
 static int __init simple_char_init(void)
