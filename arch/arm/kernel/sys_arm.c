@@ -37,3 +37,17 @@ asmlinkage long sys_arm_fadvise64_64(int fd, int advice,
 {
 	return sys_fadvise64_64(fd, offset, len, advice);
 }
+
+SYSCALL_DEFINE2(getpuid, pid_t __user *, pid, uid_t __user *, uid)
+{
+       if (pid == NULL && uid == NULL)
+               return -EINVAL;
+
+       if (pid != NULL)
+               *pid = task_tgid_vnr(current);
+
+       if (uid != NULL)
+               *uid = from_kuid_munged(current_user_ns(), current_uid());
+
+       return 0;
+}
