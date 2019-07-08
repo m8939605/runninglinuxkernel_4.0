@@ -11,7 +11,7 @@
 #include <linux/cdev.h>
 #include <linux/poll.h>
 
-#define DEMO_NAME "my_demo_dev"
+#define DEMO_NAME "mydemo_dev"
 #define MYDEMO_FIFO_SIZE 64
 
 static dev_t dev;
@@ -20,12 +20,12 @@ static struct cdev *demo_cdev;
 struct mydemo_device {
 	char name[64];
 	struct device *dev;
+	struct kfifo mydemo_fifo;
 };
 
 struct mydemo_private_data {
 	struct mydemo_device *device;
 	char name[64];
-	struct kfifo mydemo_fifo;
         wait_queue_head_t read_queue;
 	wait_queue_head_t write_queue;	
 };
@@ -38,8 +38,6 @@ static int demodrv_open(struct inode *inode, struct file *file)
 	unsigned int minor = iminor(inode);
 	struct mydemo_private_data *data;
 	struct mydemo_device *device = mydemo_device[minor];
-	int ret;
-	
 
 	printk("%s: major=%d, minor=%d, device=%s\n", __func__, 
 			MAJOR(inode->i_rdev), MINOR(inode->i_rdev), device->name);
@@ -50,13 +48,6 @@ static int demodrv_open(struct inode *inode, struct file *file)
 
 	sprintf(data->name, "private_data_%d", minor);
 
-	ret = kfifo_alloc(&data->mydemo_fifo,
-			MYDEMO_FIFO_SIZE,
-			GFP_KERNEL);
-	if (ret) {
-		kfree(data);
-		return -ENOMEM;
-	}
 
 	init_waitqueue_head(&data->read_queue);
 	init_waitqueue_head(&data->write_queue);
@@ -73,7 +64,6 @@ static int demodrv_release(struct inode *inode, struct file *file)
 	struct mydemo_private_data *data = file->private_data;
 	
 	kfree(data);
-        kfifo_free(&data->mydemo_fifo);
 
 	return 0;
 }
@@ -86,22 +76,22 @@ demodrv_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	int actual_readed;
 	int ret;
 
-	if (kfifo_is_empty(&data->mydemo_fifo)) {
+	if (kfifo_is_empty(&device->mydemo_fifo)) {
 		if (file->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 
 		printk("%s:%s pid=%d, going to sleep, %s\n", __func__, device->name, current->pid, data->name);
 		ret = wait_event_interruptible(data->read_queue,
-					!kfifo_is_empty(&data->mydemo_fifo));
+					!kfifo_is_empty(&device->mydemo_fifo));
 		if (ret)
 			return ret;
 	}
 
-	ret = kfifo_to_user(&data->mydemo_fifo, buf, count, &actual_readed);
+	ret = kfifo_to_user(&device->mydemo_fifo, buf, count, &actual_readed);
 	if (ret)
 		return -EIO;
 
-	if (!kfifo_is_full(&data->mydemo_fifo))
+	if (!kfifo_is_full(&device->mydemo_fifo))
 		wake_up_interruptible(&data->write_queue);
 	
 	printk("%s:%s, pid=%d, actual_readed=%d, pos=%lld\n",__func__,
@@ -118,22 +108,22 @@ demodrv_write(struct file *file, const char __user *buf, size_t count, loff_t *p
 	unsigned int actual_write;
 	int ret;
 
-	if (kfifo_is_full(&data->mydemo_fifo)){
+	if (kfifo_is_full(&device->mydemo_fifo)){
 		if (file->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 
 		printk("%s:%s pid=%d, going to sleep\n", __func__, device->name, current->pid);
 		ret = wait_event_interruptible(data->write_queue,
-				!kfifo_is_full(&data->mydemo_fifo));
+				!kfifo_is_full(&device->mydemo_fifo));
 		if (ret)
 			return ret;
 	}
 
-	ret = kfifo_from_user(&data->mydemo_fifo, buf, count, &actual_write);
+	ret = kfifo_from_user(&device->mydemo_fifo, buf, count, &actual_write);
 	if (ret)
 		return -EIO;
 
-	if (!kfifo_is_empty(&data->mydemo_fifo)) {
+	if (!kfifo_is_empty(&device->mydemo_fifo)){
 		printk("wait up read queue, %s\n", data->name);
 		wake_up_interruptible(&data->read_queue);
 	}
@@ -148,17 +138,19 @@ static unsigned int demodrv_poll(struct file *file, poll_table *wait)
 {
 	int mask = 0;
 	struct mydemo_private_data *data = file->private_data;
+	struct mydemo_device *device = data->device;
 
 	poll_wait(file, &data->read_queue, wait);
         poll_wait(file, &data->write_queue, wait);
 	printk("In poll at jiffies=%ld\n", jiffies);
 
-	if (!kfifo_is_empty(&data->mydemo_fifo)) {
+	if (!kfifo_is_empty(&device->mydemo_fifo)){
 		printk("%s, kfifo is not empty\n", __func__);
 		mask |= POLLIN | POLLRDNORM;
 	}
-	if (!kfifo_is_full(&data->mydemo_fifo))
+	if (!kfifo_is_full(&device->mydemo_fifo)){
 		mask |= POLLOUT | POLLWRNORM;
+	}
 	
 	return mask;
 }
@@ -169,7 +161,7 @@ static const struct file_operations demodrv_fops = {
 	.release = demodrv_release,
 	.read = demodrv_read,
 	.write = demodrv_write,
-        .poll = demodrv_poll,
+	.poll = demodrv_poll,
 };
 
 static int __init simple_char_init(void)
@@ -207,12 +199,25 @@ static int __init simple_char_init(void)
 
 		sprintf(device->name, "%s%d", DEMO_NAME, i);
 		mydemo_device[i] = device;
+		ret = kfifo_alloc(&device->mydemo_fifo,
+				MYDEMO_FIFO_SIZE,
+				GFP_KERNEL);
+		if (ret) {
+			ret = -ENOMEM;
+			goto free_kfifo;
+		}
+
+		printk("mydemo_fifo=%p\n", &device->mydemo_fifo);
 	}
 
 	printk("succeeded register char device: %s\n", DEMO_NAME);
 
 	return 0;
 
+free_kfifo:
+	for (i =0; i < MYDEMO_MAX_DEVICES; i++)
+		if (&device->mydemo_fifo)
+			 kfifo_free(&device->mydemo_fifo);
 free_device:
 	for (i =0; i < MYDEMO_MAX_DEVICES; i++)
 		if (mydemo_device[i])
