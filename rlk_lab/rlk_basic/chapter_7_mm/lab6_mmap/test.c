@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 #define DEMO_DEV_NAME "/dev/my_demo_dev"
 
