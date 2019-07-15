@@ -1,5 +1,5 @@
 
-BASEINCLUDE ?= /home/figo/work/runninglinuxkernel/runninglinuxkernel_4.0
+BASEINCLUDE ?= /home/buildsystem/work/code/proj_test/runninglinuxkernel_4.0
 #BASEINCLUDE ?= /lib/modules/`uname -r`/build
 
 mydemo_tasklet-objs := mydemodrv_tasklet.o 

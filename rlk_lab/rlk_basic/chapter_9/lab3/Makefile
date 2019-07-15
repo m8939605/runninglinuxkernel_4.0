@@ -1,5 +1,5 @@
 
-BASEINCLUDE ?= /home/figo/work/runninglinuxkernel/runninglinuxkernel_4.0
+BASEINCLUDE ?= /home/buildsystem/work/code/proj_test/runninglinuxkernel_4.0
 ccflags-y :=-g
 
 rcu-objs := rcu_test.o 

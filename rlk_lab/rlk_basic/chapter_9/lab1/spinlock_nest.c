@@ -38,6 +38,7 @@ static int lockdep_thread(void *nothing)
 		msleep(10);
 		nest_lock();
 	}
+	return 0;
 }
 
 static int __init my_init(void)

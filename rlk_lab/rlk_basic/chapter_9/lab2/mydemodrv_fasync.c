@@ -21,7 +21,7 @@ static struct class *mydemo_class;
 struct mydemo_device {
 	char name[64];
 	struct device *dev;
-        wait_queue_head_t read_queue;
+	wait_queue_head_t read_queue;
 	wait_queue_head_t write_queue;	
 	struct kfifo mydemo_fifo;
 	struct fasync_struct *fasync;
@@ -151,7 +151,7 @@ static unsigned int demodrv_poll(struct file *file, poll_table *wait)
 	mutex_lock(&device->lock);
 
 	poll_wait(file, &device->read_queue, wait);
-        poll_wait(file, &device->write_queue, wait);
+	poll_wait(file, &device->write_queue, wait);
 
 	if (!kfifo_is_empty(&device->mydemo_fifo))
 		mask |= POLLIN | POLLRDNORM;
@@ -184,7 +184,7 @@ static const struct file_operations demodrv_fops = {
 	.release = demodrv_release,
 	.read = demodrv_read,
 	.write = demodrv_write,
-        .poll = demodrv_poll,
+	.poll = demodrv_poll,
 	.fasync = demodrv_fasync,
 };
 

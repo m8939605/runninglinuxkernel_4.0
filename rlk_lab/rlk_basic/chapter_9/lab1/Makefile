@@ -1,13 +1,13 @@
 
 # modify right kernel PATH for your system
-BASEINCLUDE ?= /home/figo/work/runninglinuxkernel/runninglinuxkernel_4.0
+BASEINCLUDE ?= /home/buildsystem/work/code/proj_test/runninglinuxkernel_4.0
 #BASEINCLUDE ?= /lib/modules/`uname -r`/build
 
 spinlock-test-objs := spinlock_test.o
-spinlock-nest-objs := spinlock_nest.o
+#spinlock-nest-objs := spinlock_nest.o
 
 obj-m	:=   spinlock-test.o
-obj-m	:=   spinlock-nest.o
+#obj-m	:=   spinlock-nest.o
 all :
 	$(MAKE) -C $(BASEINCLUDE) M=$(PWD) modules;
 
